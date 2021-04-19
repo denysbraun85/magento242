@@ -1,10 +1,5 @@
-#/var
-#/vendor
-#/.idea
 /generated
 .php_cs.cache
-#/pub
-
 
 # Metadata
 /.buildpath
