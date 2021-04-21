@@ -1,7 +1,7 @@
 <?php
 namespace Training\TestOM\Model;
 
-class Manager implements ManagerInterface
+class ManagerCustomImplementation implements ManagerInterface
 {
     public function create()
     {

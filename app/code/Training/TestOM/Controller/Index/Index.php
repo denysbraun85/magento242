@@ -1,21 +1,21 @@
 <?php
 namespace Training\TestOM\Controller\Index;
 
-use Training\TestOM\Model\Test;
+use Training\TestOM\Model\PlayWithTest;
 
 class Index implements \Magento\Framework\App\Action\HttpGetActionInterface
 {
-    private $test;
+    private $playWithTest;
 
     public function __construct(
-        Test $test
+        PlayWithTest $playWithTest
     ) {
-        $this->test = $test;
+        $this->playWithTest = $playWithTest;
     }
 
     public function execute()
     {
-        $this->test->log();
+        $this->playWithTest->run();
         exit();
     }
 }
