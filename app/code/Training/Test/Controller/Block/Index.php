@@ -1,9 +1,9 @@
 <?php
 
-namespace Training\Test\Block;
+namespace Training\Test\Controller\Block;
 
-use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\View\LayoutFactory;
 
 class Index implements HttpGetActionInterface
@@ -14,25 +14,22 @@ class Index implements HttpGetActionInterface
     private $layoutFactory;
 
     /**
-     * @var Context
+     * @var ResultFactory
      */
-    private $context;
+    private $resultFactory;
 
-    /**
-     * Index constructor.
-     * @param LayoutFactory $layoutFactory
-     * @param Context $context
-     */
-    public function __construct(Context $context, LayoutFactory $layoutFactory)
+    public function __construct(LayoutFactory $layoutFactory, ResultFactory $resultFactory)
     {
-        $this->context = $context;
         $this->layoutFactory = $layoutFactory;
+        $this->resultFactory = $resultFactory;
     }
 
     public function execute()
     {
         $layout = $this->layoutFactory->create();
         $block = $layout->createBlock('Training\Test\Block\Test');
-        $this->getResponse()->appendBody($block->toHtml());
+        $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
+
+        return $result->setContents($block->_toHtml());
     }
 }
