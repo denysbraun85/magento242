@@ -11,5 +11,8 @@
 <!--    <type name="Magento\Catalog\Controller\Product\View">-->
 <!--        <plugin name="training_test" type="Training\Test\Plugin\Controller\Product\View"/>-->
 <!--    </type>-->
-    <preference for="Magento\Framework\App\FrontControllerInterface" type="Training\Test\App\FrontController"/>
+    <type name="Magento\Catalog\Block\Product\View\Decription">
+        <plugin name="product-view-my-description-plugin"
+                type="Training\Test\Plugin\Block\Product\View\ProductDescription" sortOrder="10"/>
+    </type>
 </config>
