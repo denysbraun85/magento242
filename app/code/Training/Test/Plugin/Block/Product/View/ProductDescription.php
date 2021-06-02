@@ -9,7 +9,7 @@ class ProductDescription extends Description
     public function beforeToHtml(
         Description $subject
     ) {
-        $subject->getProduct()->setData('description','Test description 1111111111111111111111111111111111');
+        $subject->setTemplate('Training_Test::description.phtml');
     }
 
 }
