@@ -9,7 +9,7 @@
                 comment="Feedback Author Name"/>
         <column xsi:type="varchar" name="author_email" nullable="false" length="255"
                 comment="Feedback Author Email"/>
-        <column xsi:type="mediumtext" name="message" nullable="false" length="200000"
+        <column xsi:type="varchar" name="message" nullable="false" length="255"
                 comment="Feedback Content"/>
         <column xsi:type="timestamp" name="creation_time" on_update="false" nullable="false"
                 default="CURRENT_TIMESTAMP" comment="Feedback Creation Time"/>
