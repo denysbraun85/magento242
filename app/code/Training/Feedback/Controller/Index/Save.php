@@ -53,6 +53,8 @@ class Save implements HttpPostActionInterface
      * @param Feedback $feedbackResource
      * @param RequestInterface $request
      * @param AddComment $comment
+     * @param ManagerInterface $messageManager
+     * @param LoggerInterface $logger
      */
     public function __construct(
         ResultFactory $resultFactory,
@@ -65,6 +67,7 @@ class Save implements HttpPostActionInterface
     ) {
         $this->feedbackFactory = $feedbackFactory;
         $this->feedbackResource = $feedbackResource;
+
         $this->resultRawFactory = $resultFactory;
         $this->request = $request;
         $this->comment = $comment;
@@ -96,7 +99,7 @@ class Save implements HttpPostActionInterface
                 return $result;
             }
         }
-        $result->setPath('*/*/index');
+        return $result->setPath('*/*/index');
     }
 
     /**

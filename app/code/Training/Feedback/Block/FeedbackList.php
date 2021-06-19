@@ -6,6 +6,7 @@ use Magento\Framework\DataObject;
 use Magento\Framework\Stdlib\DateTime\Timezone;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
+use Training\Feedback\Model\ResourceModel\Feedback;
 use Training\Feedback\Model\ResourceModel\Feedback\CollectionFactory;
 
 class FeedbackList extends Template
@@ -14,17 +15,21 @@ class FeedbackList extends Template
     private $collectionFactory;
     private $collection;
     private $timezone;
+    private $feedback;
 
     public function __construct(
         Context $context,
         CollectionFactory $collectionFactory,
         Timezone $timezone,
+        Feedback $feedback,
         array $data = array()
     ) {
         parent::__construct($context, $data);
         $this->collectionFactory = $collectionFactory;
         $this->timezone = $timezone;
+        $this->feedback = $feedback;
     }
+
     public function getCollection()
     {
         if (!$this->collection) {
@@ -34,6 +39,7 @@ class FeedbackList extends Template
         }
         return $this->collection;
     }
+
     public function getPagerHtml()
     {
         $pagerBlock = $this->getChildBlock('feedback_list_pager');
@@ -49,16 +55,30 @@ class FeedbackList extends Template
         }
         return '';
     }
+
     public function getLimit()
     {
         return static::PAGE_SIZE;
     }
+
     public function getAddFeedbackUrl()
     {
         return $this->getUrl('training_feedback/index/save');
     }
+
     public function getFeedbackDate($feedback)
     {
         return $this->timezone->formatDateTime($feedback->getCreationTime());
     }
+
+    public function getAllFeedbackNumber()
+    {
+        return $this->feedback->getAllFeedbackNumber();
+    }
+
+    public function getActiveFeedbackNumber()
+    {
+        return $this->feedback->getActiveFeedbackNumber();
+    }
+
 }
