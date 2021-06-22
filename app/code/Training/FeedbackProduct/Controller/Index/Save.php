@@ -1,111 +1,117 @@
 <?php
 
-namespace Training\Feedback\Controller\Index;
+namespace Training\FeedbackProduct\Controller\Index;
 
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\RequestInterface;
-use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\Result\RedirectFactory;
+use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NotFoundException;
 use Magento\Framework\Message\ManagerInterface;
-use Magento\Sales\Controller\Adminhtml\Order\AddComment;
-use Magento\TestFramework\Inspection\Exception;
-use Psr\Log\LoggerInterface;
 use Training\Feedback\Model\FeedbackFactory;
 use Training\Feedback\Model\ResourceModel\Feedback;
+use Training\FeedbackProduct\Model\FeedbackDataLoader;
 
 class Save implements HttpPostActionInterface
 {
-
-    /**
-     * @var ResultFactory
-     */
-    private $resultRawFactory;
     /**
      * @var FeedbackFactory
      */
     private $feedbackFactory;
+
     /**
      * @var Feedback
      */
     private $feedbackResource;
+
+    /**
+     * @var FeedbackDataLoader
+     */
+    private $feedbackDataLoader;
+
     /**
      * @var RequestInterface
      */
     private $request;
-    /**
-     * @var AddComment
-     */
-    private $comment;
+
     /**
      * @var ManagerInterface
      */
     private $messageManager;
 
     /**
-     * @var LoggerInterface
+     * @var RedirectFactory
      */
-    private $logger;
+    private $resultRedirectFactory;
 
     /**
      * Save constructor.
-     * @param ResultFactory $resultFactory
      * @param FeedbackFactory $feedbackFactory
      * @param Feedback $feedbackResource
+     * @param FeedbackDataLoader $feedbackDataLoader
      * @param RequestInterface $request
-     * @param AddComment $comment
      * @param ManagerInterface $messageManager
-     * @param LoggerInterface $logger
+     * @param RedirectFactory $resultRedirectFactory
      */
     public function __construct(
-        ResultFactory $resultFactory,
         FeedbackFactory $feedbackFactory,
         Feedback $feedbackResource,
+        FeedbackDataLoader $feedbackDataLoader,
         RequestInterface $request,
-        AddComment $comment,
         ManagerInterface $messageManager,
-        LoggerInterface $logger
+        RedirectFactory $resultRedirectFactory
     ) {
         $this->feedbackFactory = $feedbackFactory;
         $this->feedbackResource = $feedbackResource;
-
-        $this->resultRawFactory = $resultFactory;
+        $this->feedbackDataLoader = $feedbackDataLoader;
         $this->request = $request;
-        $this->comment = $comment;
         $this->messageManager = $messageManager;
-        $this->logger = $logger;
+        $this->resultRedirectFactory = $resultRedirectFactory;
     }
 
     /**
-     * @return \Magento\Framework\Controller\ResultInterface
+     * Execute action based on request and return result
+     *
+     * @return ResultInterface|ResponseInterface
+     * @throws NotFoundException
      */
-
     public function execute()
     {
-        $result = $this->resultRawFactory->create(ResultFactory::TYPE_RAW);
-        if ($post = $this->comment->getRequest()->getPostValue()) {
+        $result = $this->resultRedirectFactory->create();
+        if ($post = $this->request->getPostValue()) {
             try {
                 $this->validatePost($post);
                 $feedback = $this->feedbackFactory->create();
                 $feedback->setData($post);
+                $this->setProductsToFeedback($feedback, $post);
+                $this->feedbackResource->save($feedback);
                 $this->messageManager->addSuccessMessage(
                     __('Thank you for your feedback.')
                 );
             } catch (\Exception $e) {
-                $this->logger->critical($e->getMessage());
                 $this->messageManager->addErrorMessage(
                     __('An error occurred while processing your form. Please try again later.')
                 );
                 $result->setPath('*/*/form');
-                return $result;
             }
         }
-        return $result->setPath('*/*/index');
+        $result->setPath('*/*/index');
+        return $result;
     }
 
-    /**
-     * @throws LocalizedException
-     * @throws Exception
-     */
+    private function setProductsToFeedback($feedback, $post)
+    {
+        $skus = [];
+        if (isset($post['products_skus']) && !empty($post['products_skus'])) {
+            $skus = explode(',', $post['products_skus']);
+            $skus = array_map('trim', $skus);
+            $skus = array_filter($skus);
+        }
+        $this->feedbackDataLoader->addProductsToFeedbackBySkus($feedback, $skus);
+    }
+
     private function validatePost($post)
     {
         if (!isset($post['author_name']) || trim($post['author_name']) === '') {
@@ -114,11 +120,12 @@ class Save implements HttpPostActionInterface
         if (!isset($post['message']) || trim($post['message']) === '') {
             throw new LocalizedException(__('Comment is missing'));
         }
-        if (!isset($post['author_email']) || !str_contains($post['author_email'], '@')) {
+
+        if (!isset($post['author_email']) || false === \strpos($post['author_email'], '@')) {
             throw new LocalizedException(__('Invalid email address'));
         }
-        if (trim($this->comment->getRequest()->getParam('hideit')) !== '') {
-            throw new Exception();
+        if (trim($this->request->getParam('hideit')) !== '') {
+            throw new \Exception();
         }
     }
 }
